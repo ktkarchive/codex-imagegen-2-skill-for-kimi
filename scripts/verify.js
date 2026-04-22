@@ -129,4 +129,7 @@ async function main() {
   process.exit(result.valid ? 0 : 1);
 }
 
-main().catch(e => { console.error("[verify] Error:", e.message); process.exit(1); });
+const isMain = import.meta.url === `file://${process.argv[1]}`;
+if (isMain) {
+  main().catch(e => { console.error("[verify] Error:", e.message); process.exit(1); });
+}
