@@ -149,7 +149,7 @@ async function generateOne({ prompt, quality, size }) {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
     body: JSON.stringify({
-      model: "gpt-5.4",
+      model: "gpt-5.5",
       input: [
         { role: "developer", content: developerPrompt },
         { role: "user", content: `Generate an image: ${prompt}` },
@@ -190,7 +190,7 @@ async function generateOne({ prompt, quality, size }) {
   if (!imageB64) {
     const retryRes = await fetch(`${OAUTH_URL}/v1/responses`, {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "gpt-5.4", input: [{ role: "user", content: prompt }], tools: [{ type: "image_generation", quality, size }], stream: false }),
+      body: JSON.stringify({ model: "gpt-5.5", input: [{ role: "user", content: prompt }], tools: [{ type: "image_generation", quality, size }], stream: false }),
     });
     if (retryRes.ok) {
       const json = await retryRes.json();
