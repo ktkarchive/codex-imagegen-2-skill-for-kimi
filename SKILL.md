@@ -1,3 +1,7 @@
+---
+url: https://github.com/ktkarchive/codex-imagegen-2-skill-for-kimi
+---
+
 # codex-imagegen-2-skill-for-kimi
 
 A Kimi CLI skill for image generation using OpenAI's Codex OAuth proxy. Generate images from text prompts or transform existing images — all via your ChatGPT Plus/Pro subscription.
