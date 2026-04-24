@@ -79,6 +79,9 @@ node edit.js --input photo.png --prompt "turn into watercolor painting" --qualit
 
 # Verify generated image
 node verify.js --input result.png --verbose
+
+# Enable prompt-image alignment check (auto-retry if score < 7/10)
+node generate.js --prompt "cyberpunk city at night" --quality high --align-check
 ```
 
 ## Configuration
@@ -90,7 +93,8 @@ Create `config.json` in the skill root to set defaults:
   "default_quality": "high",
   "default_size": "1024x1024",
   "default_format": "png",
-  "output_dir": "~/Pictures/codex-images"
+  "output_dir": "~/Pictures/codex-images",
+  "align_check": false
 }
 ```
 
@@ -100,6 +104,7 @@ Create `config.json` in the skill root to set defaults:
 | `size` | `1024x1024`, `1024x1536`, `1536x1024` | Resolution and aspect ratio |
 | `format` | `png`, `jpeg`, `webp` | Output format |
 | `n` | 1–8 | Parallel generation count |
+| `align_check` | `true`, `false` | Enable prompt-image alignment verification (default: `false`) |
 
 ## Output
 
@@ -123,13 +128,26 @@ Generated images are saved to `~/Pictures/codex-images/` (or your configured `ou
 | "401/403" error | OAuth expired, re-run `npx @openai/codex login` |
 | "Rate limit" | Wait a few minutes and retry |
 
+## Prompt-Image Alignment Verification (Optional)
+
+By default, alignment checking is **disabled** to keep generation fast and avoid extra API calls.
+
+When enabled (`--align-check` or `config.align_check: true`), the skill will:
+1. Generate the image
+2. Send it to a vision-capable LLM (Codex `gpt-5.5`) with the prompt
+3. Receive a 1–10 alignment score + explanation
+4. **Auto-retry once** if the score is below 7/10, incorporating the feedback into the next prompt
+
+> **Note:** This feature requires an active Codex OAuth session and adds ~10–20s per image. Recommended for high-stakes deliverables where prompt fidelity is critical.
+
 ## How It Works
 
 1. **Prompt Analysis** — `prompt_enhancer.js` parses your natural-language input and infers use case, scene, lighting, and composition.
 2. **Structuring** — Rebuilds the prompt into OpenAI's recommended GPT Image 2 format (Scene → Subject → Details → Constraints).
 3. **Generation** — Sends the structured brief to Codex (`gpt-5.5` + `image_generation` tool) via your ChatGPT OAuth session.
 4. **Verification** — `verify.js` checks the downloaded PNG for corruption, correct dimensions, and valid signature.
-5. **History** — Every generation is logged to `history.jsonl` with prompt, parameters, and output path.
+5. **Alignment Check** *(optional)* — `alignCheck()` uses a vision model to score prompt fidelity; retries once if misaligned.
+6. **History** — Every generation is logged to `history.jsonl` with prompt, parameters, and output path.
 
 ## License
 

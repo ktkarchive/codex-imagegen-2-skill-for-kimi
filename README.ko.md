@@ -79,6 +79,9 @@ node edit.js --input photo.png --prompt "수채화 그림으로 바꿔줘" --qua
 
 # 생성된 이미지 검증
 node verify.js --input result.png --verbose
+
+# 프롬프트-이미지 일치도 검증 활성화 (7점 미만 시 자동 재시도)
+node generate.js --prompt "사이버펑크 도시의 밤" --quality high --align-check
 ```
 
 ## 설정
@@ -90,7 +93,8 @@ node verify.js --input result.png --verbose
   "default_quality": "high",
   "default_size": "1024x1024",
   "default_format": "png",
-  "output_dir": "~/Pictures/codex-images"
+  "output_dir": "~/Pictures/codex-images",
+  "align_check": false
 }
 ```
 
@@ -100,6 +104,7 @@ node verify.js --input result.png --verbose
 | `size` | `1024x1024`, `1024x1536`, `1536x1024` | 해상도 및 비율 |
 | `format` | `png`, `jpeg`, `webp` | 출력 포맷 |
 | `n` | 1–8 | 병렬 생성 개수 |
+| `align_check` | `true`, `false` | 프롬프트-이미지 일치도 검증 활성화 (기본값: `false`) |
 
 ## 출력 경로
 
@@ -123,13 +128,26 @@ node verify.js --input result.png --verbose
 | "401/403" 오류 | OAuth 만료, `npx @openai/codex login` 재실행 |
 | "Rate limit" | 몇 분 기다린 후 재시도 |
 
+## 프롬프트-이미지 일치도 검증 (선택적)
+
+기본적으로 일치도 검증은 **비활성화**되어 있어 생성 속도가 빠르고 추가 API 호출이 없습니다.
+
+활성화 시 (`--align-check` 또는 `config.align_check: true`):
+1. 이미지를 생성합니다.
+2. 비전 가능한 LLM(Codex `gpt-5.5`)에 이미지와 프롬프트를 함께 전송합니다.
+3. 1–10점 일치도 점수와 설명을 받습니다.
+4. **7점 미만이면 한 번 자동 재생성**합니다.
+
+> **참고:** 이 기능은 활성 Codex OAuth 세션이 필요하며 이미지당 약 10–20초가 추가됩니다. 프롬프트 정확도가 중요한 고품질 결과물에 권장됩니다.
+
 ## 동작 원리
 
 1. **프롬프트 분석** — `prompt_enhancer.js`가 자연어 입력을 파싱하여 용도, 장면, 조명, 구도를 추론합니다.
 2. **구조화** — OpenAI 권장 GPT Image 2 형식(장면→주제→세부사항→제약)으로 프롬프트를 재구성합니다.
 3. **생성** — 구조화된 브리프를 Codex(`gpt-5.5` + `image_generation` 툴)에 전달하여 이미지를 생성합니다.
 4. **검증** — `verify.js`가 다운로드된 PNG의 손상 여부, 올바른 크기, 유효한 시그니처를 확인합니다.
-5. **히스토리** — 모든 생성 이력을 `history.jsonl`에 프롬프트, 파라미터, 출력 경로와 함께 기록합니다.
+5. **일치도 검증** *(선택적)* — `alignCheck()`가 비전 모델로 프롬프트 일치도를 평가하고, 불일치 시 한 번 재시도합니다.
+6. **히스토리** — 모든 생성 이력을 `history.jsonl`에 프롬프트, 파라미터, 출력 경로와 함께 기록합니다.
 
 ## 라이선스
 

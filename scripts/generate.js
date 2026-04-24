@@ -39,14 +39,14 @@ async function logHistory(entry) {
 /* ── Args ── */
 function parseArgs() {
   const args = process.argv.slice(2);
-  const parsed = { prompt: "", quality: "", size: "", n: "1", format: "png", outDir: "" };
+  const parsed = { prompt: "", quality: "", size: "", n: "1", format: "png", outDir: "", alignCheck: "false" };
   for (let i = 0; i < args.length; i += 2) {
     const key = args[i].replace(/^--/, "");
     const val = args[i + 1];
     if (key in parsed) parsed[key] = val;
   }
   if (!parsed.prompt) {
-    console.error("Usage: node generate.js --prompt <text> [--quality low|medium|high] [--size WxH] [--n 1-8] [--format png|jpeg|webp] [--out-dir <dir>]");
+    console.error("Usage: node generate.js --prompt <text> [--quality low|medium|high] [--size WxH] [--n 1-8] [--format png|jpeg|webp] [--out-dir <dir>] [--align-check]");
     process.exit(1);
   }
   return parsed;
@@ -216,6 +216,7 @@ async function main() {
   const size = args.size || config.default_size || "1024x1024";
   const format = args.format || config.default_format || "png";
   const outDir = args.outDir || config.output_dir || join(process.env.HOME, "Pictures", "gpt-img2-for_kimi");
+  const doAlignCheck = (args.alignCheck === "true") || (config.align_check === true);
   const count = Math.min(Math.max(parseInt(args.n) || 1, 1), 8);
 
   console.log(`[ima2] Config: quality=${quality}, size=${size}, format=${format}, n=${count}`);
@@ -257,7 +258,10 @@ async function main() {
         }
 
         // 2) Prompt-image alignment check (retry once if misaligned)
-        const alignResult = await alignCheck(outPath, args.prompt, OAUTH_URL);
+        let alignResult = { available: false };
+        if (doAlignCheck) {
+          alignResult = await alignCheck(outPath, args.prompt, OAUTH_URL);
+        }
         if (alignResult.available) {
           const score = alignResult.score ?? 0;
           const status = alignResult.passed ? "✅" : "⚠️";
@@ -298,8 +302,10 @@ async function main() {
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log(`[ima2] Done: ${saved}/${count} images saved in ${elapsed}s`);
     if (verifiedOutputs.length > 0) console.log(`[ima2] PNG verified: ${verifiedOutputs.length}/${saved}`);
-    if (alignedOutputs.length > 0) console.log(`[ima2] Aligned: ${alignedOutputs.length}/${saved}`);
-    if (misalignedOutputs.length > 0) console.warn(`[ima2] Misaligned (retried): ${misalignedOutputs.length}/${saved}`);
+    if (doAlignCheck) {
+      if (alignedOutputs.length > 0) console.log(`[ima2] Aligned: ${alignedOutputs.length}/${saved}`);
+      if (misalignedOutputs.length > 0) console.warn(`[ima2] Misaligned (retried): ${misalignedOutputs.length}/${saved}`);
+    }
 
     await logHistory({ type: "generate", prompt: args.prompt, quality, size, format, count, saved, verified: verifiedOutputs.length, aligned: alignedOutputs.length, misaligned: misalignedOutputs.length, outputs, total_tokens: totalTokens, elapsed });
   } catch (err) {
