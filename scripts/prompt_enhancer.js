@@ -192,6 +192,18 @@ export function enhancePrompt(userPrompt, options = {}) {
   const composition = inferComposition(userPrompt);
   const explicitTexts = extractExplicitText(userPrompt);
 
+  // Override: if user explicitly mentions a style keyword, don't force photorealistic fallback
+  const EXPLICIT_STYLE_KEYWORDS = [
+    "일러스트", "illustration", "anime", "만화", "cartoon",
+    "sketch", "스케치", "watercolor", "수채화", "pixel art", "픽셀아트",
+    "oil paint", "유화", "3d render", "3d 렌더", "digital art", "디지털",
+    "pencil", "선화", "cinematic", "시네마틱", "film still",
+  ];
+  const hasExplicitStyle = EXPLICIT_STYLE_KEYWORDS.some(k =>
+    userPrompt.toLowerCase().includes(k)
+  );
+  const effectiveStyle = hasExplicitStyle ? null : style;
+
   // Build sections
   const sections = [];
 
@@ -200,7 +212,6 @@ export function enhancePrompt(userPrompt, options = {}) {
 
   // 2. Subject — FRONT-LOADED (most critical for model attention)
   // User's original wording is preserved; the model infers style from context.
-  // If a specific style was detected, it goes into Important details instead.
   sections.push(`Subject: ${subject}.`);
 
   // 3. Scene
@@ -210,7 +221,7 @@ export function enhancePrompt(userPrompt, options = {}) {
 
   // 4. Important details (style, lighting, composition, materials)
   const details = [];
-  if (style) details.push(style);
+  if (effectiveStyle) details.push(effectiveStyle);
   if (lighting) details.push(lighting);
   if (composition) details.push(composition);
 

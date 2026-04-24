@@ -9,7 +9,7 @@ import { writeFile, readFile, mkdir } from "fs/promises";
 import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { validateImage } from "./verify.js";
+import { validateImage, alignCheck } from "./verify.js";
 import { enhancePrompt, logEnhancement } from "./prompt_enhancer.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -199,8 +199,8 @@ async function main() {
   const startTime = Date.now();
 
   try {
-    const result = await editImage({ input: args.input, prompt: args.prompt, quality, size });
-    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    let result = await editImage({ input: args.input, prompt: args.prompt, quality, size });
+    let elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 
     // Rename output extension if format differs
     let outPath = args.out;
@@ -212,20 +212,45 @@ async function main() {
 
     console.log(`[edit] Saved: ${outPath} (${elapsed}s)`);
 
-    // Verify the edited image
+    // 1) PNG validation
     const verifyResult = await validateImage(outPath);
     if (verifyResult.valid) {
-      console.log(`[edit] ✅ Verified: ${verifyResult.png?.dimensions?.width}x${verifyResult.png?.dimensions?.height}`);
+      console.log(`[edit] ✅ PNG verified: ${verifyResult.png?.dimensions?.width}x${verifyResult.png?.dimensions?.height}`);
     } else {
-      console.error(`[edit] ❌ Verification failed:`);
+      console.error(`[edit] ❌ PNG verification failed:`);
       for (const [check, passed] of Object.entries(verifyResult.checks)) {
         if (!passed) console.error(`       - ${check}`);
       }
     }
 
+    // 2) Prompt-image alignment check (retry once if misaligned)
+    const alignResult = await alignCheck(outPath, args.prompt, OAUTH_URL);
+    if (alignResult.available) {
+      const score = alignResult.score ?? 0;
+      const status = alignResult.passed ? "✅" : "⚠️";
+      console.log(`[edit] ${status} Alignment score: ${score}/10 — ${alignResult.explanation}`);
+
+      if (!alignResult.passed) {
+        console.log(`[edit] Retrying with alignment feedback...`);
+        const retryPrompt = `${args.prompt}. (Previous attempt scored ${score}/10: ${alignResult.explanation})`;
+        try {
+          const retryResult = await editImage({ input: args.input, prompt: retryPrompt, quality, size });
+          const retryPath = outPath.replace(/\.[^.]+$/, `_retry.${format}`);
+          await writeFile(retryPath, Buffer.from(retryResult.b64, "base64"));
+          console.log(`[edit] Retry saved: ${retryPath}`);
+          result = retryResult;
+          outPath = retryPath;
+        } catch (retryErr) {
+          console.error(`[edit] Retry failed:`, retryErr.message);
+        }
+      }
+    } else {
+      console.log(`[edit] Alignment check skipped: ${alignResult.error || "unavailable"}`);
+    }
+
     if (result.usage) console.log("[edit] Usage:", JSON.stringify(result.usage));
 
-    await logHistory({ type: "edit", input: args.input, prompt: args.prompt, quality, size, format, output: outPath, verified: verifyResult.valid, total_tokens: result.usage?.total_tokens || 0, elapsed });
+    await logHistory({ type: "edit", input: args.input, prompt: args.prompt, quality, size, format, output: outPath, verified: verifyResult.valid, aligned: alignResult.passed ?? null, total_tokens: result.usage?.total_tokens || 0, elapsed });
   } catch (err) {
     console.error("[edit] Error:", err.message);
     console.error("       Hint: If the proxy returned 401/403, your OAuth session may have expired.");

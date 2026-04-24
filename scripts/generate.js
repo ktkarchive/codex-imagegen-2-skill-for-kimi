@@ -9,7 +9,7 @@ import { writeFile, mkdir, readFile } from "fs/promises";
 import { existsSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
-import { validateImage } from "./verify.js";
+import { validateImage, alignCheck } from "./verify.js";
 import { enhancePrompt, logEnhancement } from "./prompt_enhancer.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -230,45 +230,78 @@ async function main() {
     let saved = 0;
     let totalTokens = 0;
     const outputs = [];
-
     const verifiedOutputs = [];
-  const failedOutputs = [];
+    const failedOutputs = [];
+    const alignedOutputs = [];
+    const misalignedOutputs = [];
 
-  for (let i = 0; i < results.length; i++) {
-    const r = results[i];
-    if (r.status === "fulfilled" && r.value.b64) {
-      const filename = `gpt-img2_${Date.now()}_${i}.${format}`;
-      const outPath = join(outDir, filename);
-      await writeFile(outPath, Buffer.from(r.value.b64, "base64"));
-      console.log(`[ima2] [${i + 1}/${count}] Saved: ${outPath}`);
+    for (let i = 0; i < results.length; i++) {
+      const r = results[i];
+      if (r.status === "fulfilled" && r.value.b64) {
+        let filename = `gpt-img2_${Date.now()}_${i}.${format}`;
+        let outPath = join(outDir, filename);
+        await writeFile(outPath, Buffer.from(r.value.b64, "base64"));
+        console.log(`[ima2] [${i + 1}/${count}] Saved: ${outPath}`);
 
-      // Verify the generated image
-      const verifyResult = await validateImage(outPath);
-      if (verifyResult.valid) {
-        console.log(`[ima2] [${i + 1}/${count}] ✅ Verified: ${verifyResult.png?.dimensions?.width}x${verifyResult.png?.dimensions?.height}`);
-        verifiedOutputs.push(outPath);
-      } else {
-        console.error(`[ima2] [${i + 1}/${count}] ❌ Verification failed:`);
-        for (const [check, passed] of Object.entries(verifyResult.checks)) {
-          if (!passed) console.error(`       - ${check}`);
+        // 1) PNG validation
+        const verifyResult = await validateImage(outPath);
+        if (verifyResult.valid) {
+          console.log(`[ima2] [${i + 1}/${count}] ✅ PNG verified: ${verifyResult.png?.dimensions?.width}x${verifyResult.png?.dimensions?.height}`);
+          verifiedOutputs.push(outPath);
+        } else {
+          console.error(`[ima2] [${i + 1}/${count}] ❌ PNG verification failed:`);
+          for (const [check, passed] of Object.entries(verifyResult.checks)) {
+            if (!passed) console.error(`       - ${check}`);
+          }
+          failedOutputs.push({ path: outPath, checks: verifyResult.checks });
         }
-        failedOutputs.push({ path: outPath, checks: verifyResult.checks });
+
+        // 2) Prompt-image alignment check (retry once if misaligned)
+        const alignResult = await alignCheck(outPath, args.prompt, OAUTH_URL);
+        if (alignResult.available) {
+          const score = alignResult.score ?? 0;
+          const status = alignResult.passed ? "✅" : "⚠️";
+          console.log(`[ima2] [${i + 1}/${count}] ${status} Alignment score: ${score}/10 — ${alignResult.explanation}`);
+
+          if (!alignResult.passed) {
+            misalignedOutputs.push({ path: outPath, score, explanation: alignResult.explanation });
+            console.log(`[ima2] [${i + 1}/${count}] Retrying with alignment feedback...`);
+            const retryPrompt = `${args.prompt}. (Previous attempt scored ${score}/10: ${alignResult.explanation})`;
+            try {
+              const retryResult = await generateOne({ prompt: retryPrompt, quality, size });
+              if (retryResult.b64) {
+                filename = `gpt-img2_${Date.now()}_${i}_retry.${format}`;
+                outPath = join(outDir, filename);
+                await writeFile(outPath, Buffer.from(retryResult.b64, "base64"));
+                console.log(`[ima2] [${i + 1}/${count}] Retry saved: ${outPath}`);
+                if (retryResult.usage?.total_tokens) totalTokens += retryResult.usage.total_tokens;
+              }
+            } catch (retryErr) {
+              console.error(`[ima2] [${i + 1}/${count}] Retry failed:`, retryErr.message);
+            }
+          } else {
+            alignedOutputs.push(outPath);
+          }
+        } else {
+          console.log(`[ima2] [${i + 1}/${count}] Alignment check skipped: ${alignResult.error || "unavailable"}`);
+          alignedOutputs.push(outPath);
+        }
+
+        outputs.push(outPath);
+        saved++;
+        if (r.value.usage?.total_tokens) totalTokens += r.value.usage.total_tokens;
+      } else {
+        console.error(`[ima2] [${i + 1}/${count}] Failed:`, r.reason?.message);
       }
-
-      outputs.push(outPath);
-      saved++;
-      if (r.value.usage?.total_tokens) totalTokens += r.value.usage.total_tokens;
-    } else {
-      console.error(`[ima2] [${i + 1}/${count}] Failed:`, r.reason?.message);
     }
-  }
 
-  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-  console.log(`[ima2] Done: ${saved}/${count} images saved in ${elapsed}s`);
-  if (verifiedOutputs.length > 0) console.log(`[ima2] Verified: ${verifiedOutputs.length}/${saved}`);
-  if (failedOutputs.length > 0) console.error(`[ima2] Verification failures: ${failedOutputs.length}/${saved}`);
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`[ima2] Done: ${saved}/${count} images saved in ${elapsed}s`);
+    if (verifiedOutputs.length > 0) console.log(`[ima2] PNG verified: ${verifiedOutputs.length}/${saved}`);
+    if (alignedOutputs.length > 0) console.log(`[ima2] Aligned: ${alignedOutputs.length}/${saved}`);
+    if (misalignedOutputs.length > 0) console.warn(`[ima2] Misaligned (retried): ${misalignedOutputs.length}/${saved}`);
 
-  await logHistory({ type: "generate", prompt: args.prompt, quality, size, format, count, saved, verified: verifiedOutputs.length, outputs, total_tokens: totalTokens, elapsed });
+    await logHistory({ type: "generate", prompt: args.prompt, quality, size, format, count, saved, verified: verifiedOutputs.length, aligned: alignedOutputs.length, misaligned: misalignedOutputs.length, outputs, total_tokens: totalTokens, elapsed });
   } catch (err) {
     console.error("[ima2] Error:", err.message);
     proxy.kill(); process.exit(1);
