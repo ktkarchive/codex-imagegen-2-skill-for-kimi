@@ -216,7 +216,7 @@ async function main() {
   const size = args.size || config.default_size || "1024x1024";
   const format = args.format || config.default_format || "png";
   const outDir = args.outDir || config.output_dir || join(process.env.HOME, "Pictures", "gpt-img2-for_kimi");
-  const doAlignCheck = (args.alignCheck === "true") || (config.align_check === true);
+  const doAlignCheck = (args.alignCheck !== "false") && (config.align_check !== false);
   const count = Math.min(Math.max(parseInt(args.n) || 1, 1), 8);
 
   console.log(`[ima2] Config: quality=${quality}, size=${size}, format=${format}, n=${count}`);

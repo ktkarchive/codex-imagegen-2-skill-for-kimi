@@ -136,7 +136,9 @@ Generated images are saved to `~/Pictures/codex-images/` (or your configured `ou
 
 By default, alignment checking is **disabled** to keep generation fast and avoid extra API calls.
 
-When enabled (`--align-check` or `config.align_check: true`), the skill will:
+By default, alignment checking is **enabled** for every generation. To disable it for faster generation, use `--no-align-check` or set `config.align_check: false`.
+
+When active, the skill will:
 1. Generate the image
 2. Send it to a vision-capable LLM (Codex `gpt-5.5`) with the prompt
 3. Receive a 1–10 alignment score + explanation

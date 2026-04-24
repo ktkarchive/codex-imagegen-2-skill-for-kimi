@@ -192,7 +192,7 @@ async function main() {
   const quality = args.quality || config.default_quality || "medium";
   const size = args.size || config.default_size || "1024x1024";
   const format = args.format || config.default_format || "png";
-  const doAlignCheck = (args.alignCheck === "true") || (config.align_check === true);
+  const doAlignCheck = (args.alignCheck !== "false") && (config.align_check !== false);
 
   if (!existsSync(args.input)) { console.error(`ERROR: Input file not found: ${args.input}`); process.exit(1); }
 

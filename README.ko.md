@@ -134,9 +134,9 @@ node generate.js --prompt "사이버펑크 도시의 밤" --quality high --align
 
 ## 프롬프트-이미지 일치도 검증 (선택적)
 
-기본적으로 일치도 검증은 **비활성화**되어 있어 생성 속도가 빠르고 추가 API 호출이 없습니다.
+기본적으로 일치도 검증은 **활성화**되어 있습니다. 더 빠른 생성을 위해 비활성화하려면 `--no-align-check` 또는 `config.align_check: false`를 사용하세요.
 
-활성화 시 (`--align-check` 또는 `config.align_check: true`):
+동작 방식:
 1. 이미지를 생성합니다.
 2. 비전 가능한 LLM(Codex `gpt-5.5`)에 이미지와 프롬프트를 함께 전송합니다.
 3. 1–10점 일치도 점수와 설명을 받습니다.
