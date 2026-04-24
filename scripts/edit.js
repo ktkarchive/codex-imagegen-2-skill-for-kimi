@@ -30,10 +30,16 @@ async function logHistory(entry) {
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const parsed = { input: "", prompt: "", quality: "", size: "", format: "png", out: "", alignCheck: "false" };
-  for (let i = 0; i < args.length; i += 2) { const key = args[i].replace(/^--/, ""); const val = args[i + 1]; if (key in parsed) parsed[key] = val; }
+  const parsed = { input: "", prompt: "", quality: "", size: "", format: "png", out: "", alignCheck: "true" };
+  for (let i = 0; i < args.length; i++) {
+    const key = args[i].replace(/^--/, "");
+    if (key === "align-check") { parsed.alignCheck = "true"; continue; }
+    if (key === "no-align-check") { parsed.alignCheck = "false"; continue; }
+    const val = args[i + 1];
+    if (key in parsed && val && !val.startsWith("--")) { parsed[key] = val; i++; }
+  }
   if (!parsed.input || !parsed.prompt || !parsed.out) {
-    console.error("Usage: node edit.js --input <img> --prompt <desc> [--quality low|medium|high] [--size WxH] [--format png|jpeg|webp] --out <file>] [--align-check]");
+    console.error("Usage: node edit.js --input <img> --prompt <desc> [--quality low|medium|high] [--size WxH] [--format png|jpeg|webp] --out <file>] [--align-check | --no-align-check]");
     process.exit(1);
   }
   return parsed;
@@ -192,7 +198,10 @@ async function main() {
   const quality = args.quality || config.default_quality || "medium";
   const size = args.size || config.default_size || "1024x1024";
   const format = args.format || config.default_format || "png";
-  const doAlignCheck = (args.alignCheck !== "false") && (config.align_check !== false);
+  // align-check: default enabled, --no-align-check or config.align_check: false to disable
+  let doAlignCheck = true;
+  if (args.alignCheck === "false" || config.align_check === false) doAlignCheck = false;
+  if (args.alignCheck === "true") doAlignCheck = true;
 
   if (!existsSync(args.input)) { console.error(`ERROR: Input file not found: ${args.input}`); process.exit(1); }
 

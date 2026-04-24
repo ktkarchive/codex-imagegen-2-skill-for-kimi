@@ -39,14 +39,16 @@ async function logHistory(entry) {
 /* ── Args ── */
 function parseArgs() {
   const args = process.argv.slice(2);
-  const parsed = { prompt: "", quality: "", size: "", n: "1", format: "png", outDir: "", alignCheck: "false" };
-  for (let i = 0; i < args.length; i += 2) {
+  const parsed = { prompt: "", quality: "", size: "", n: "1", format: "png", outDir: "", alignCheck: "true" };
+  for (let i = 0; i < args.length; i++) {
     const key = args[i].replace(/^--/, "");
+    if (key === "align-check") { parsed.alignCheck = "true"; continue; }
+    if (key === "no-align-check") { parsed.alignCheck = "false"; continue; }
     const val = args[i + 1];
-    if (key in parsed) parsed[key] = val;
+    if (key in parsed && val && !val.startsWith("--")) { parsed[key] = val; i++; }
   }
   if (!parsed.prompt) {
-    console.error("Usage: node generate.js --prompt <text> [--quality low|medium|high] [--size WxH] [--n 1-8] [--format png|jpeg|webp] [--out-dir <dir>] [--align-check]");
+    console.error("Usage: node generate.js --prompt <text> [--quality low|medium|high] [--size WxH] [--n 1-8] [--format png|jpeg|webp] [--out-dir <dir>] [--align-check | --no-align-check]");
     process.exit(1);
   }
   return parsed;
@@ -216,7 +218,10 @@ async function main() {
   const size = args.size || config.default_size || "1024x1024";
   const format = args.format || config.default_format || "png";
   const outDir = args.outDir || config.output_dir || join(process.env.HOME, "Pictures", "gpt-img2-for_kimi");
-  const doAlignCheck = (args.alignCheck !== "false") && (config.align_check !== false);
+  // align-check: default enabled, --no-align-check or config.align_check: false to disable
+  let doAlignCheck = true;
+  if (args.alignCheck === "false" || config.align_check === false) doAlignCheck = false;
+  if (args.alignCheck === "true") doAlignCheck = true;
   const count = Math.min(Math.max(parseInt(args.n) || 1, 1), 8);
 
   console.log(`[ima2] Config: quality=${quality}, size=${size}, format=${format}, n=${count}`);
