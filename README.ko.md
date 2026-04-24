@@ -98,6 +98,7 @@ node generate.js --prompt "사이버펑크 도시의 밤" --quality high --align
   "default_size": "1024x1024",
   "default_format": "png",
   "output_dir": "~/Pictures/codex-images",
+  "align_check": true,
   "align_threshold": 8
 }
 ```

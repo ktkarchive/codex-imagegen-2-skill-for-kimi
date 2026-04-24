@@ -98,6 +98,7 @@ Create `config.json` in the skill root to set defaults:
   "default_size": "1024x1024",
   "default_format": "png",
   "output_dir": "~/Pictures/codex-images",
+  "align_check": true,
   "align_threshold": 8
 }
 ```
