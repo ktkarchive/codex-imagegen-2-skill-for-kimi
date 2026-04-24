@@ -97,7 +97,7 @@ export async function validateImage(filePath) {
 }
 
 /* ── Prompt-Image Alignment Check (Codex Vision via OAuth) ── */
-export async function alignCheck(filePath, prompt, oauthUrl = "http://127.0.0.1:10531") {
+export async function alignCheck(filePath, prompt, oauthUrl = "http://127.0.0.1:10531", threshold = 7) {
   try {
     const imageBuffer = await readFile(filePath);
     const base64Image = imageBuffer.toString("base64");
@@ -168,7 +168,8 @@ Respond ONLY in JSON format exactly like this (no markdown, no extra text):
       explanation: result.explanation ?? "",
       prompt,
       model: "gpt-5.5",
-      passed: (result.score ?? 0) >= 7,
+      passed: (result.score ?? 0) >= threshold,
+      threshold,
     };
   } catch (err) {
     return { available: false, error: err.message, prompt };
