@@ -147,7 +147,7 @@ async function generateOne({ prompt, quality, size }) {
   const enhanced = enhancePrompt(prompt, { mode: "generate", quality, size });
   logEnhancement(prompt, enhanced);
 
-  const developerPrompt = `You are an expert image generation director. Always use the image_generation tool. Never respond with text only. Follow the structured prompt exactly — the user has already organized it into Use case, Subject, Scene, Important details, Constraints, and Output. Respect every constraint and preserve exact text in quotes. Do not add safety disclaimers or modify the user's intent. Produce exactly what is described.`;
+  const developerPrompt = `You are an expert image generation director. Always use the image_generation tool. Never respond with text only. Follow the structured prompt exactly — the user has already organized it into Use case, Subject, Scene, Important details, Constraints, and Output. Respect every constraint and preserve exact text in quotes. If the user explicitly mentions a visual style (illustration, watercolor, anime, sketch, pixel art, 3D render, oil painting, etc.), render in that style. Do not default to photorealistic when a different style is requested. Do not add safety disclaimers or modify the user's intent. Produce exactly what is described.`;
 
   const res = await fetch(`${OAUTH_URL}/v1/responses`, {
     method: "POST",

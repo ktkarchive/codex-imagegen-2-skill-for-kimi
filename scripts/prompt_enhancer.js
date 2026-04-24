@@ -29,6 +29,18 @@ const QUALITY_BOOSTERS = [
   "sharp focus",
 ];
 
+const STYLE_BOOSTERS = {
+  illustration: "clean linework, vibrant colors, expressive character design, stylized illustration",
+  "watercolor painting": "soft watercolor washes, textured paper, delicate brushstrokes, painterly",
+  "3D render": "physically based rendering, realistic materials, proper lighting, clean geometry",
+  "oil painting": "rich impasto texture, classical composition, warm palette, gallery quality",
+  "pixel art": "crisp pixel edges, limited palette, retro aesthetic, dithering",
+  "anime-style illustration": "cel shading, vibrant colors, clean linework, expressive eyes",
+  "pencil sketch": "graphite texture, cross-hatching, sketch paper grain, loose strokes",
+  "digital painting": "digital brushwork, layered colors, concept art quality, dramatic lighting",
+  "cinematic film still": "anamorphic lens, film grain, color grading, cinematic composition",
+};
+
 /**
  * Detect if the prompt already looks structured (has Scene/Subject/Details labels).
  * If so, skip heavy reprocessing and only append missing constraints.
@@ -106,6 +118,7 @@ function inferScene(prompt) {
  */
 function inferStyle(prompt) {
   const p = prompt.toLowerCase();
+  if (/(illustration|artwork|그림|일러스트)/.test(p)) return "illustration";
   if (/(photoreal|photo realistic|real photo|realistic|사진|리얼|실사)/.test(p)) return "photorealistic";
   if (/(3d|render|blender|c4d|octane|3d 렌더)/.test(p)) return "3D render";
   if (/(watercolor|water colour|수채화)/.test(p)) return "watercolor painting";
@@ -225,9 +238,12 @@ export function enhancePrompt(userPrompt, options = {}) {
   if (lighting) details.push(lighting);
   if (composition) details.push(composition);
 
-  // Quality boosters (only for generate mode)
+  // Quality boosters (style-aware, only for generate mode)
   if (mode === "generate") {
-    details.push("high-quality rendering: " + QUALITY_BOOSTERS.join(", "));
+    const boosters = style && STYLE_BOOSTERS[style]
+      ? STYLE_BOOSTERS[style]
+      : QUALITY_BOOSTERS.join(", ");
+    details.push("high-quality rendering: " + boosters);
   }
 
   // Explicit text handling
