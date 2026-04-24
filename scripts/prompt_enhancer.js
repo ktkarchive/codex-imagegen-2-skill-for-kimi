@@ -34,7 +34,7 @@ const QUALITY_BOOSTERS = [
  * If so, skip heavy reprocessing and only append missing constraints.
  */
 function isStructured(prompt) {
-  const markers = /\b(Scene|Subject|Use case|Constraints|Details|Output):/i;
+  const markers = /(Scene|Subject|Use case|Constraints|Details|Output):/i;
   return markers.test(prompt);
 }
 
@@ -64,10 +64,10 @@ function inferUseCase(prompt) {
 function extractSubject(prompt) {
   // Remove action verbs that dilute the subject
   let s = prompt
-    .replace(/\b(generate|create|make|draw|paint|render|produce)\s+(an?|the|me|a)\s*/gi, "")
-    .replace(/\b(image|picture|photo|photograph|illustration)\s+of\s+/gi, "")
-    .replace(/\bplease\b/gi, "")
-    .replace(/\bfor me\b/gi, "")
+    .replace(/(generate|create|make|draw|paint|render|produce)\s+(an?|the|me|a)\s*/gi, "")
+    .replace(/(image|picture|photo|photograph|illustration)\s+of\s+/gi, "")
+    .replace(/please/gi, "")
+    .replace(/for me/gi, "")
     .trim();
 
   // Capitalize first letter for professionalism
@@ -82,20 +82,20 @@ function inferScene(prompt) {
   const scenes = [];
 
   // Time of day
-  if (/\b(sunrise|dawn|morning|아침)\b/.test(p)) scenes.push("sunrise lighting, early morning atmosphere");
-  else if (/\b(golden hour|sunset| dusk|evening|저녁|노을)\b/.test(p)) scenes.push("golden hour, warm sunset atmosphere");
-  else if (/\b(night|midnight|dark|nighttime|밤|야간)\b/.test(p)) scenes.push("nighttime setting, dark atmospheric background");
-  else if (/\b(blue hour|twilight|블루아워)\b/.test(p)) scenes.push("blue hour, twilight atmosphere");
+  if (/(sunrise|dawn|morning|아침)/.test(p)) scenes.push("sunrise lighting, early morning atmosphere");
+  else if (/(golden hour|sunset| dusk|evening|저녁|노을)/.test(p)) scenes.push("golden hour, warm sunset atmosphere");
+  else if (/(night|midnight|dark|nighttime|밤|야간)/.test(p)) scenes.push("nighttime setting, dark atmospheric background");
+  else if (/(blue hour|twilight|블루아워)/.test(p)) scenes.push("blue hour, twilight atmosphere");
 
   // Environment
-  if (/\b(studio|white background|클린|흰색 배경)\b/.test(p)) scenes.push("clean studio environment, neutral background");
-  else if (/\b(outdoor|outside|야외|바깥)\b/.test(p)) scenes.push("outdoor natural environment");
-  else if (/\b(indoor|inside|interior|실내|낭\b)/.test(p)) scenes.push("indoor interior setting");
-  else if (/\b(urban|city|street|도시|거리)\b/.test(p)) scenes.push("urban city environment");
-  else if (/\b(nature|forest|jungle|meadow|nature|숲|자연)\b/.test(p)) scenes.push("natural outdoor environment");
+  if (/(studio|white background|클린|흰색 배경)/.test(p)) scenes.push("clean studio environment, neutral background");
+  else if (/(outdoor|outside|야외|바깥)/.test(p)) scenes.push("outdoor natural environment");
+  else if (/(indoor|inside|interior|실내|낭)/.test(p)) scenes.push("indoor interior setting");
+  else if (/(urban|city|street|도시|거리)/.test(p)) scenes.push("urban city environment");
+  else if (/(nature|forest|jungle|meadow|nature|숲|자연)/.test(p)) scenes.push("natural outdoor environment");
 
   // Concert / event specific (from sangpye experience)
-  if (/\b(concert|stage|performance|공연|묘대|콘서트)\b/.test(p)) scenes.push("concert stage with dramatic lighting, crowd energy");
+  if (/(concert|stage|performance|공연|묘대|콘서트)/.test(p)) scenes.push("concert stage with dramatic lighting, crowd energy");
 
   if (scenes.length === 0) return null;
   return scenes.join("; ");
@@ -106,15 +106,15 @@ function inferScene(prompt) {
  */
 function inferStyle(prompt) {
   const p = prompt.toLowerCase();
-  if (/\b(photoreal|photo realistic|real photo|realistic|사진|리얼|실사)\b/.test(p)) return "photorealistic";
-  if (/\b(3d|render|blender|c4d|octane|3d 렌더)\b/.test(p)) return "3D render";
-  if (/\b(watercolor|water colour|수채화)\b/.test(p)) return "watercolor painting";
-  if (/\b(oil paint|oil painting|유화)\b/.test(p)) return "oil painting";
-  if (/\b(pixel art|pixelart|픽셀아트)\b/.test(p)) return "pixel art";
-  if (/\b(anime|manga|cartoon|animation|애니|만화)\b/.test(p)) return "anime-style illustration";
-  if (/\b(sketch|pencil|line art|drawing|스케치|선화)\b/.test(p)) return "pencil sketch";
-  if (/\b(digital art|digital painting|디지털)\b/.test(p)) return "digital painting";
-  if (/\b(cinematic|film still|movie|영화|시네마틱)\b/.test(p)) return "cinematic film still";
+  if (/(photoreal|photo realistic|real photo|realistic|사진|리얼|실사)/.test(p)) return "photorealistic";
+  if (/(3d|render|blender|c4d|octane|3d 렌더)/.test(p)) return "3D render";
+  if (/(watercolor|water colour|수채화)/.test(p)) return "watercolor painting";
+  if (/(oil paint|oil painting|유화)/.test(p)) return "oil painting";
+  if (/(pixel art|pixelart|픽셀아트)/.test(p)) return "pixel art";
+  if (/(anime|manga|cartoon|animation|애니|만화)/.test(p)) return "anime-style illustration";
+  if (/(sketch|pencil|line art|drawing|스케치|선화)/.test(p)) return "pencil sketch";
+  if (/(digital art|digital painting|디지털)/.test(p)) return "digital painting";
+  if (/(cinematic|film still|movie|영화|시네마틱)/.test(p)) return "cinematic film still";
   return "photorealistic"; // default
 }
 
@@ -123,14 +123,14 @@ function inferStyle(prompt) {
  */
 function inferLighting(prompt) {
   const p = prompt.toLowerCase();
-  if (/\b(soft light|softbox|diffuse|소프트|부드러운 빛)\b/.test(p)) return "soft diffused lighting";
-  if (/\b(harsh|hard light|direct sun|강한 빛|직사광선)\b/.test(p)) return "harsh direct lighting";
-  if (/\b(neon|cyberpunk|네온|사이버)\b/.test(p)) return "neon lighting, cyberpunk atmosphere";
-  if (/\b(candle|warm|cozy|fire|촛불|따뜻한)\b/.test(p)) return "warm candlelight atmosphere";
-  if (/\b(studio|스튜디오)\b/.test(p)) return "professional studio lighting";
-  if (/\b(natural light|window light|창문|자연광)\b/.test(p)) return "natural window light";
-  if (/\b(dramatic|chiaroscuro|드라마틱)\b/.test(p)) return "dramatic chiaroscuro lighting";
-  if (/\b(red light|붉은|빨간)\b/.test(p)) return "dramatic red-toned lighting";
+  if (/(soft light|softbox|diffuse|소프트|부드러운 빛)/.test(p)) return "soft diffused lighting";
+  if (/(harsh|hard light|direct sun|강한 빛|직사광선)/.test(p)) return "harsh direct lighting";
+  if (/(neon|cyberpunk|네온|사이버)/.test(p)) return "neon lighting, cyberpunk atmosphere";
+  if (/(candle|warm|cozy|fire|촛불|따뜻한)/.test(p)) return "warm candlelight atmosphere";
+  if (/(studio|스튜디오)/.test(p)) return "professional studio lighting";
+  if (/(natural light|window light|창문|자연광)/.test(p)) return "natural window light";
+  if (/(dramatic|chiaroscuro|드라마틱)/.test(p)) return "dramatic chiaroscuro lighting";
+  if (/(red light|붉은|빨간)/.test(p)) return "dramatic red-toned lighting";
   return null;
 }
 
@@ -140,17 +140,17 @@ function inferLighting(prompt) {
 function inferComposition(prompt) {
   const p = prompt.toLowerCase();
   const comps = [];
-  if (/\b(close-up|macro|extreme close|클로즈업|접사)\b/.test(p)) comps.push("close-up framing");
-  else if (/\b(medium shot|waist up|미디엄)\b/.test(p)) comps.push("medium shot");
-  else if (/\b(wide shot|full body|long shot|와이드|전신)\b/.test(p)) comps.push("wide shot, full body visible");
-  else if (/\b(overhead|top.down|flat lay|평면|탑뷰)\b/.test(p)) comps.push("overhead top-down view");
+  if (/(close-up|macro|extreme close|클로즈업|접사)/.test(p)) comps.push("close-up framing");
+  else if (/(medium shot|waist up|미디엄)/.test(p)) comps.push("medium shot");
+  else if (/(wide shot|full body|long shot|와이드|전신)/.test(p)) comps.push("wide shot, full body visible");
+  else if (/(overhead|top.down|flat lay|평면|탑뷰)/.test(p)) comps.push("overhead top-down view");
 
-  if (/\b(centered|center|중앙|가운데)\b/.test(p)) comps.push("centered composition");
-  else if (/\b(rule of thirds|off center|삼분할)\b/.test(p)) comps.push("rule of thirds composition");
-  else if (/\b(symmetrical|symmetry|대칭)\b/.test(p)) comps.push("symmetrical composition");
+  if (/(centered|center|중앙|가운데)/.test(p)) comps.push("centered composition");
+  else if (/(rule of thirds|off center|삼분할)/.test(p)) comps.push("rule of thirds composition");
+  else if (/(symmetrical|symmetry|대칭)/.test(p)) comps.push("symmetrical composition");
 
-  if (/\b(shallow depth|bokeh|blur background|아웃포커싱)\b/.test(p)) comps.push("shallow depth of field");
-  if (/\b(negative space|minimal|simple|미니멀|여백)\b/.test(p)) comps.push("minimal composition with negative space");
+  if (/(shallow depth|bokeh|blur background|아웃포커싱)/.test(p)) comps.push("shallow depth of field");
+  if (/(negative space|minimal|simple|미니멀|여백)/.test(p)) comps.push("minimal composition with negative space");
 
   return comps.length > 0 ? comps.join("; ") : null;
 }
@@ -199,9 +199,9 @@ export function enhancePrompt(userPrompt, options = {}) {
   sections.push(`Use case: ${useCase}.`);
 
   // 2. Subject — FRONT-LOADED (most critical for model attention)
-  // We also prepend style to the subject line so the first words carry weight
-  let subjectLine = style ? `${style}. ${subject}` : subject;
-  sections.push(`Subject: ${subjectLine}.`);
+  // User's original wording is preserved; the model infers style from context.
+  // If a specific style was detected, it goes into Important details instead.
+  sections.push(`Subject: ${subject}.`);
 
   // 3. Scene
   if (scene) {
@@ -210,7 +210,7 @@ export function enhancePrompt(userPrompt, options = {}) {
 
   // 4. Important details (style, lighting, composition, materials)
   const details = [];
-  if (style && !subjectLine.includes(style)) details.push(style);
+  if (style) details.push(style);
   if (lighting) details.push(lighting);
   if (composition) details.push(composition);
 
