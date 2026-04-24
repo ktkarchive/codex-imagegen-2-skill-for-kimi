@@ -98,7 +98,7 @@ node generate.js --prompt "사이버펑크 도시의 밤" --quality high --align
   "default_size": "1024x1024",
   "default_format": "png",
   "output_dir": "~/Pictures/codex-images",
-  "align_check": false
+  "align_threshold": 8
 }
 ```
 
@@ -108,7 +108,8 @@ node generate.js --prompt "사이버펑크 도시의 밤" --quality high --align
 | `size` | `1024x1024`, `1024x1536`, `1536x1024` | 해상도 및 비율 |
 | `format` | `png`, `jpeg`, `webp` | 출력 포맷 |
 | `n` | 1–8 | 병렬 생성 개수 |
-| `align_check` | `true`, `false` | 프롬프트-이미지 일치도 검증 활성화 (기본값: `false`) |
+| `align_check` | `true`, `false` | 프롬프트-이미지 일치도 검증 활성화 (기본값: `true`) |
+| `align_threshold` | `1`–`10` | 일치도 통과 기준 점수 (기본값: `7`) |
 
 ## 출력 경로
 

@@ -98,7 +98,7 @@ Create `config.json` in the skill root to set defaults:
   "default_size": "1024x1024",
   "default_format": "png",
   "output_dir": "~/Pictures/codex-images",
-  "align_check": false
+  "align_threshold": 8
 }
 ```
 
@@ -108,7 +108,8 @@ Create `config.json` in the skill root to set defaults:
 | `size` | `1024x1024`, `1024x1536`, `1536x1024` | Resolution and aspect ratio |
 | `format` | `png`, `jpeg`, `webp` | Output format |
 | `n` | 1–8 | Parallel generation count |
-| `align_check` | `true`, `false` | Enable prompt-image alignment verification (default: `false`) |
+| `align_check` | `true`, `false` | Enable prompt-image alignment verification (default: `true`) |
+| `align_threshold` | `1`–`10` | Minimum alignment score to pass (default: `7`) |
 
 ## Output
 
