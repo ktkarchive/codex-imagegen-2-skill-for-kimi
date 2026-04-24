@@ -1,12 +1,16 @@
 # codex-imagegen-2-skill-for-kimi
 
-Generate and edit images through **OpenAI Codex OAuth** using your **ChatGPT Plus/Pro** subscription. No API key. No per-image billing. Built for [Kimi CLI](https://github.com/OpenKimi/Kimi-CLI) agent workflows.
+Generate and edit images through **OpenAI Codex OAuth** using your **ChatGPT Plus/Pro** subscription. No API key. No per-image billing.
+
+Originally built for [Kimi CLI](https://github.com/OpenKimi/Kimi-CLI), but works with any agent or CLI that can run shell commands — including **Claude Code**, **OpenCode**, **Hermes Agent**, **OpenClo**, or your own custom agent framework.
 
 > 🌐 [한국어 README](README.ko.md)
 
 ---
 
 ## What Makes This Different
+
+> Based on [OpenAI's official GPT Image 2 prompting guide](https://developers.openai.com/cookbook/examples/multimodal/image-gen-models-prompting-guide).
 
 | Feature | Other Skills | This Skill |
 |---------|-------------|------------|
@@ -152,3 +156,7 @@ When enabled (`--align-check` or `config.align_check: true`), the skill will:
 ## License
 
 MIT
+
+---
+
+*Last updated: 2026-04-24*
