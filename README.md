@@ -2,7 +2,7 @@
 
 Generate and edit images through **OpenAI Codex OAuth** using your **ChatGPT Plus/Pro** subscription. No API key. No per-image billing.
 
-Originally built for [Kimi CLI](https://github.com/OpenKimi/Kimi-CLI), but works with any agent or CLI that can run shell commands — including **Claude Code**, **OpenCode**, **Hermes Agent**, **OpenClo**, or your own custom agent framework.
+Originally built for [Kimi CLI](https://github.com/OpenKimi/Kimi-CLI), but works with any agent or CLI that can run shell commands — including **Claude Code**, **OpenCode**, **Hermes Agent**, **OpenClaw**, or your own custom agent framework.
 
 > 🌐 [한국어 README](README.ko.md)
 

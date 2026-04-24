@@ -2,7 +2,7 @@
 
 **ChatGPT Plus/Pro** 구독을 통해 **OpenAI Codex OAuth**로 이미지를 생성하는 스킬입니다. API 키 없이, 이미지당 과금 없이 사용할 수 있습니다.
 
-원래 [Kimi CLI](https://github.com/OpenKimi/Kimi-CLI)를 위해 제작되었지만, 셸 명령어를 실행할 수 있는 모든 에이전트나 CLI에서 사용 가능합니다 — **Claude Code**, **OpenCode**, **Hermes Agent**, **OpenClo**, 또는 직접 만든 커스텀 에이전트 프레임워크 등.
+원래 [Kimi CLI](https://github.com/OpenKimi/Kimi-CLI)를 위해 제작되었지만, 셸 명령어를 실행할 수 있는 모든 에이전트나 CLI에서 사용 가능합니다 — **Claude Code**, **OpenCode**, **Hermes Agent**, **OpenClaw**, 또는 직접 만든 커스텀 에이전트 프레임워크 등.
 
 > 🌐 [English README](README.md)
 
