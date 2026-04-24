@@ -265,7 +265,7 @@ async function main() {
         // 2) Prompt-image alignment check (retry once if misaligned)
         let alignResult = { available: false };
         if (doAlignCheck) {
-          const alignThreshold = config.align_threshold ?? 7;
+          const alignThreshold = config.align_threshold ?? 9;
           alignResult = await alignCheck(outPath, args.prompt, OAUTH_URL, alignThreshold);
         }
         if (alignResult.available) {

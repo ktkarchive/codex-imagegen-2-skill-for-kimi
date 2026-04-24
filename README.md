@@ -99,7 +99,7 @@ Create `config.json` in the skill root to set defaults:
   "default_format": "png",
   "output_dir": "~/Pictures/codex-images",
   "align_check": true,
-  "align_threshold": 8
+  "align_threshold": 9
 }
 ```
 
@@ -110,7 +110,7 @@ Create `config.json` in the skill root to set defaults:
 | `format` | `png`, `jpeg`, `webp` | Output format |
 | `n` | 1–8 | Parallel generation count |
 | `align_check` | `true`, `false` | Enable prompt-image alignment verification (default: `true`) |
-| `align_threshold` | `1`–`10` | Minimum alignment score to pass (default: `7`) |
+| `align_threshold` | `1`–`10` | Minimum alignment score to pass (default: `9`) |
 
 ## Output
 

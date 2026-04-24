@@ -97,7 +97,7 @@ export async function validateImage(filePath) {
 }
 
 /* ── Prompt-Image Alignment Check (Codex Vision via OAuth) ── */
-export async function alignCheck(filePath, prompt, oauthUrl = "http://127.0.0.1:10531", threshold = 7) {
+export async function alignCheck(filePath, prompt, oauthUrl = "http://127.0.0.1:10531", threshold = 9) {
   try {
     const imageBuffer = await readFile(filePath);
     const base64Image = imageBuffer.toString("base64");

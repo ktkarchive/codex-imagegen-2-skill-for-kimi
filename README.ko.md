@@ -99,7 +99,7 @@ node generate.js --prompt "사이버펑크 도시의 밤" --quality high --align
   "default_format": "png",
   "output_dir": "~/Pictures/codex-images",
   "align_check": true,
-  "align_threshold": 8
+  "align_threshold": 9
 }
 ```
 
@@ -110,7 +110,7 @@ node generate.js --prompt "사이버펑크 도시의 밤" --quality high --align
 | `format` | `png`, `jpeg`, `webp` | 출력 포맷 |
 | `n` | 1–8 | 병렬 생성 개수 |
 | `align_check` | `true`, `false` | 프롬프트-이미지 일치도 검증 활성화 (기본값: `true`) |
-| `align_threshold` | `1`–`10` | 일치도 통과 기준 점수 (기본값: `7`) |
+| `align_threshold` | `1`–`10` | 일치도 통과 기준 점수 (기본값: `9`) |
 
 ## 출력 경로
 
